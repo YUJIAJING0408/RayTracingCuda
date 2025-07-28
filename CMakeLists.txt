@@ -3,7 +3,7 @@ project(RaytracingCuda CXX CUDA)
 project(ppmTest CXX CUDA)
 project(RaytracingCPU CUDA CXX)
 
-set(CMAKE_CUDA_STANDARD 11)
+set(CMAKE_CUDA_STANDARD 26)
 set(CMAKE_CUDA_COMPILER "C:/cuda/bin/nvcc.exe")  # 根据您的CUDA版本调整路径
 
 set(HEADER_DIR "C:/cuda/include")
