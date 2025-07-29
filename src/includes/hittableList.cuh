@@ -11,12 +11,16 @@
 #endif
 #include <memory>
 #include "hittable.cuh"
-#include <vector>
+#include <thrust/device_vector.h>
+#include <thrust/host_vector.h>
+#include "cameraCuda.cuh"
+#include "shpere.cuh"
+#include <thrust/sequence.h>
+#include <thrust/copy.h>
 using std::make_shared;
-using std::vector;
+using thrust::device_vector;
+using thrust::host_vector;
 using std::shared_ptr;
-
-
 
 class hittableList : public hittable {
 public:
@@ -26,6 +30,14 @@ public:
 
     void add(shared_ptr<hittable> object) {
         objects.push_back(object);
+    }
+
+    CUDA_CALLABLE device_vector<sphere> toSphserList() {
+        device_vector<sphere> sl ;
+        for (int i = 0; i < this->objects.size(); i++) {
+            sl.push_back(static_cast<sphere&>(*objects[i]));
+        }
+        return sl;
     }
 
     CUDA_CALLABLE bool hit(const ray &r, interval rayT, hitRecord &rec) const override {

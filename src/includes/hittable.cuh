@@ -16,7 +16,8 @@ public:
     vec3 normal; // hit point normal
     float t; // hit time
     bool front_face;
-    void set_face_normal(const ray& r, const vec3& outward_normal) {
+    CUDA_CALLABLE hitRecord():p(.0f,.0f,.0f),normal(.0f,.0f,.0f),t(infinity),front_face(false){};
+    CUDA_CALLABLE void set_face_normal(const ray& r, const vec3& outward_normal) {
         front_face = dot(r.GetDirection(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }

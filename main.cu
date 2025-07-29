@@ -10,6 +10,7 @@
 #endif
 
 
+
 int main() {
     std::cout << "Hello, World!" << std::endl;
 
@@ -20,9 +21,14 @@ int main() {
 
     // Camera
     camera cam;
-    cam.aspectRatio = 16.0/9.0;
-    cam.imageWidth = 400;
-    cam.render("image.ppm",world);
-
+    // cam.aspectRatio = 16.0/9.0;
+    cam.aspectRatio = 2.0/1.0;
+    cam.imageWidth = IMAGEWIDTH;
+    cam.samplePerPixel = MAXSPP;
+    cameraInfo camCuda = cam.toCameraInfo();
+    printf("Camera pss:%f\n",camCuda.pixelSampleScale);
+    // cam.render("image.ppm",world);
+    printf("------------------------");
+    render(camCuda,"imageCuda.ppm",world.toSphserList());
     return 0;
 }

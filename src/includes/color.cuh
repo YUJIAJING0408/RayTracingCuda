@@ -11,21 +11,23 @@
 #define CUDA_CALLABLE
 #endif
 #include <fstream>
-#include <string>
+#include "interval.cuh"
 #include "vec3.cuh"
-#include "iostream"
+#include <string>
+
 using namespace std;
 
 using color = vec3;
 
-CUDA_CALLABLE void writeColor(ofstream &file,const color& pixelColor) {
+CUDA_CALLABLE void writeColor(std::ofstream &file,const color& pixelColor) {
     string line;
     auto r = pixelColor.x();
     auto g = pixelColor.y();
     auto b = pixelColor.z();
-    int ir = int(255.999 * r);
-    int ig = int(255.999 * g);
-    int ib = int(255.999 * b);
+    const interval intensity(0.000, 0.999);
+    int ir = int(256 * intensity.clamp(r));
+    int ig = int(256 * intensity.clamp(g));
+    int ib = int(256 * intensity.clamp(b));
     line += to_string(ir) + " " + to_string(ig) + " " + to_string(ib) + " ";
     // cout<<line<<endl;
     file.write(line.c_str(), line.length());

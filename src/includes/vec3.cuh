@@ -22,6 +22,9 @@ public:
     CUDA_CALLABLE float x() const { return element[0]; }
     CUDA_CALLABLE float y() const { return element[1]; }
     CUDA_CALLABLE float z() const { return element[2]; }
+    CUDA_CALLABLE void print() const {
+        printf("x: %f, y: %f, z: %f\n", element[0], element[1], element[2]);
+    }
     CUDA_CALLABLE vec3 operator-() const {
         return vec3(-element[0], -element[1], -element[2]);
     }
@@ -48,7 +51,7 @@ public:
         return *this *= 1 / s;
     }
     CUDA_CALLABLE float length() const {
-        return sqrt(lengthSquared());
+        return sqrtf(lengthSquared());
     }
     CUDA_CALLABLE float lengthSquared() const {
         return element[0] * element[0] + element[1] * element[1] + element[2] * element[2];
@@ -93,9 +96,11 @@ CUDA_CALLABLE inline vec3 cross(const vec3 &u, const vec3 &v) {
                 u.element[0] * v.element[1] - u.element[1] * v.element[0]);
 }
 
-inline vec3 unit_vector(const vec3& v) {
+CUDA_CALLABLE inline vec3 unit_vector(const vec3& v) {
+    if (v.length() <= 0.0f) {
+        return vec3(0,0,0);
+    }
     return v / v.length();
 }
-
 
 #endif //VEC3_CUH

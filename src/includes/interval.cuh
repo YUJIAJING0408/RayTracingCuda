@@ -9,6 +9,7 @@
 #else
 #define CUDA_CALLABLE
 #endif
+#include "raytracingCommon.h"
 // #include "raytracingCommon.h"
 
 
@@ -20,16 +21,22 @@ public:
 
     CUDA_CALLABLE interval(const float min, const float max) : min(min), max(max) {}
 
-    double size() const {
+    CUDA_CALLABLE double size() const {
         return max - min;
     }
 
-    bool contains(const float x) const {
+    CUDA_CALLABLE bool contains(const float x) const {
         return min <= x && x <= max;
     }
 
-    bool surrounds(const float x) const {
+    CUDA_CALLABLE bool surrounds(const float x) const {
         return min < x && x < max;
+    }
+
+    CUDA_CALLABLE float clamp(float x) const {
+        if (x < min) return min;
+        if (x > max) return max;
+        return x;
     }
 
     static const interval empty, universe;
