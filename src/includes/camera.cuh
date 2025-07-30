@@ -54,7 +54,7 @@ public:
                 color pixelColor(0, 0, 0);
                 for (int sample = 0; sample < samplePerPixel; sample++) {
                     ray r = getRay(x, y);
-                    pixelColor += rayColor(r,world);
+                    pixelColor += rayColor(r,MAXDEPTH,world);
                 }
                 writeColor(file,pixelColor * pixelSampleScale);
             }
@@ -78,10 +78,11 @@ public:
         return ray(rayOrigin, rayDirection);
     }
 
-    CUDA_CALLABLE color rayColor(const ray& r,const hittable& world) {
+    CUDA_CALLABLE color rayColor(const ray& r,int depth,const hittable& world) {
         hitRecord rec;
-        if (world.hit(r, interval(0, infinity), rec)) {
-            return 0.5 * (rec.normal + color(1.f,1.f,1.f));
+        if (world.hit(r, interval(1e-10, infinity), rec)) {
+            vec3 direction = rec.normal + random_unit_vector();
+            return 0.5 * rayColor(ray(rec.p, direction),depth-1, world);
         }
         vec3 unitDirection = unit_vector(r.GetDirection());
         auto a = 0.5*(unitDirection.y() + 1.0);

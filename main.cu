@@ -27,7 +27,7 @@ int main() {
     cam.samplePerPixel = MAXSPP;
     cameraInfo camCuda = cam.toCameraInfo();
     printf("Camera pss:%f\n",camCuda.pixelSampleScale);
-    // cam.render("image.ppm",world);
+    cam.render("image.ppm",world);
     printf("------------------------");
     render(camCuda,"imageCuda.ppm",world.toSphserList());
     return 0;
