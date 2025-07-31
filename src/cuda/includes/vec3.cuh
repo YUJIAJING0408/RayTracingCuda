@@ -56,6 +56,10 @@ public:
     CUDA_CALLABLE float lengthSquared() const {
         return element[0] * element[0] + element[1] * element[1] + element[2] * element[2];
     }
+    CUDA_CALLABLE bool nearZero() const {
+        float s = 1e-8f;
+        return (fabsf(element[0]) < s) && (fabsf(element[1]) < s) && (fabsf(element[2]) < s);
+    }
 };
 
 using point3 = vec3;
@@ -121,12 +125,60 @@ CUDA_CALLABLE inline vec3 random_unit_vector() {
     }
 }
 
+
+
+
 CUDA_CALLABLE inline vec3 random_on_hemisphere(const vec3& normal) {
     vec3 on_unit_sphere = random_unit_vector();
     if (dot(on_unit_sphere, normal) > 0.0) // In the same hemisphere as the normal
         return on_unit_sphere;
     return -on_unit_sphere;
 }
+
+CUDA_CALLABLE inline vec3 reflect(const vec3& v, const vec3& n) {
+    return v - 2*dot(v,n)*n;
+}
+
+
+__device__ float getRandomFloat(int idx,curandState *states) {
+    curandState localState = states[idx];
+    float r = curand_uniform(&localState);
+    states[idx] = localState;
+    return r;
+}
+
+__device__ float getRandomBetween(int idx,curandState *states,float min,float max) {
+    return  min + (max-min)*getRandomFloat(idx,states);
+}
+
+__device__ vec3 getRandomVec3(int idx,curandState *states) {
+    return vec3(getRandomFloat(idx,states),getRandomFloat(idx,states),getRandomFloat(idx,states));
+}
+
+__device__ vec3 getRandomVec3Between(int idx,curandState *states,float min,float max) {
+    float x = getRandomBetween(idx,states,min,max);
+    float y = getRandomBetween(idx,states,min,max);
+    float z = getRandomBetween(idx,states,min,max);
+    return vec3(x,y,z);
+}
+
+__device__ vec3 getRandomUnitVec3(int idx,curandState *states) {
+    while (true) {
+        vec3 temp = getRandomVec3Between(idx,states,-1.0f,1.0f);
+        float ls = temp.lengthSquared();
+        if ( 1e-32<ls &&ls <= 1.0f) {
+            return temp/sqrtf(ls);
+        }
+    }
+}
+
+__device__ vec3 getRandomOnHemisphere(int idx,curandState *states,vec3 normal) {
+    vec3 onUnitSphere = getRandomUnitVec3(idx,states);
+    if (dot(onUnitSphere, normal) > 0.0) // In the same hemisphere as the normal
+        return onUnitSphere;
+    return -onUnitSphere;
+}
+
 
 
 #endif //VEC3_CUH

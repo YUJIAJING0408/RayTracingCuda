@@ -4,9 +4,9 @@
 
 #ifndef RAYTRACINGCOMMON_H
 #define RAYTRACINGCOMMON_H
-#define MAXSPP 128
+#define MAXSPP 1024
 #define IMAGEWIDTH 160
-#define MAXDEPTH 10
+#define MAXDEPTH 32
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -62,15 +62,16 @@ inline void progressBar(int current, int total, int bar_width) {
     if (current == total) printf("\n");
 }
 
+
+
 // Common Headers
-#include "vec3.cuh"
-#include "color.cuh"
-#include "interval.cuh"
-#include "ray.cuh"
-#include "hittable.cuh"
-#include "hittableList.cuh"
-#include "shpere.cuh"
-#include "cameraCuda.cuh"
-#include "camera.cuh"
+#include "vec3.h"
+#include "color.h"
+#include "interval.h"
+#include "ray.h"
+#include "hittable.h"
+#include "hittableList.h"
+#include "shpere.h"
+#include "camera.h"
 
 #endif //RAYTRACINGCOMMON_H

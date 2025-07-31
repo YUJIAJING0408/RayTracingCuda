@@ -5,22 +5,18 @@
 #ifndef SHPERE_H
 #define SHPERE_H
 
-#ifdef __CUDACC__
-#define CUDA_CALLABLE __host__ __device__
-#else
-#define CUDA_CALLABLE
-#endif
-
-class sphere : public hittable {
+#include <utility>
+#include "material.h"
+class sphereCpu : public hittableCpu {
 public:
-    sphere() :center(0,0,1), radius(0.2f){}
-    sphere(const point3& c,float r): center(c), radius(r) {}
-    CUDA_CALLABLE bool hit(const ray& r, interval rayT, hitRecord& rec) const override {
+    sphereCpu() :center(0,0,1), radius(0.2f){}
+    sphereCpu(const point3cpu& c,float r,shared_ptr<materialCpu> m): center(c), radius(r),_material(std::move(m)) {}
+    bool hit(const rayCpu& r, intervalCpu rayT, hitRecordCpu& rec) const override {
         // r.GetDirection().print();
         // printf("hittest \n");
         // printf("hittest \n");
 
-        vec3 oc = center - r.GetOrigin();
+        vec3cpu oc = center - r.GetOrigin();
         // r.GetDirection().print();
         float a = r.GetDirection().lengthSquared();
         float h = dot(r.GetDirection(), oc);
@@ -45,15 +41,17 @@ public:
         // printf("a,h,c,root is %f,%f,%f,%f\n",a,h,c,root);
         rec.t = root;
         rec.p = r.at(rec.t);
-        vec3 outward_normal = (rec.p - center) / radius;
+        rec.mat=_material;
+        vec3cpu outward_normal = (rec.p - center) / radius;
         rec.set_face_normal(r, outward_normal);
         return true;
     }
-    CUDA_CALLABLE point3 getCenter() const {return center;}
-    CUDA_CALLABLE float getRadius() const {return radius;}
+    point3cpu getCenter() const {return center;}
+    float getRadius() const {return radius;}
 private:
-    point3 center;
+    point3cpu center;
     float radius;
+    shared_ptr<materialCpu> _material;
 };
 
 

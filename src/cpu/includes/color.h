@@ -4,27 +4,26 @@
 
 #ifndef COLOR_CUH
 #define COLOR_CUH
-#pragma once
-#ifdef __CUDACC__
-#define CUDA_CALLABLE __host__ __device__
-#else
-#define CUDA_CALLABLE
-#endif
 #include <fstream>
-#include "interval.cuh"
-#include "vec3.cuh"
+#include "interval.h"
+#include "vec3.h"
 #include <string>
 
 using namespace std;
 
-using color = vec3;
+using color = vec3cpu;
 
-CUDA_CALLABLE void writeColor(std::ofstream &file,const color& pixelColor) {
+inline float linear2Gamma(float linearComponent)
+{
+    return linearComponent > 0?sqrtf(linearComponent):0;
+}
+
+void writeColor(std::ofstream &file,const color& pixelColor) {
     string line;
-    auto r = pixelColor.x();
-    auto g = pixelColor.y();
-    auto b = pixelColor.z();
-    const interval intensity(0.000, 0.999);
+    auto r = linear2Gamma( pixelColor.x());
+    auto g = linear2Gamma(pixelColor.y());
+    auto b = linear2Gamma(pixelColor.z());
+    const intervalCpu intensity(0.000, 0.999);
     int ir = int(256 * intensity.clamp(r));
     int ig = int(256 * intensity.clamp(g));
     int ib = int(256 * intensity.clamp(b));

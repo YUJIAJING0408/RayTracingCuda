@@ -9,7 +9,7 @@
 #else
 #define CUDA_CALLABLE
 #endif
-#include "raytracingCommon.h"
+#include "raytracingCommon.cuh"
 // #include "raytracingCommon.h"
 
 
@@ -21,7 +21,7 @@ public:
 
     CUDA_CALLABLE interval(const float min, const float max) : min(min), max(max) {}
 
-    CUDA_CALLABLE double size() const {
+    CUDA_CALLABLE float size() const {
         return max - min;
     }
 
