@@ -4,7 +4,7 @@
 
 #ifndef RAYTRACINGCOMMON_H
 #define RAYTRACINGCOMMON_H
-#define MAXSPP 1024
+#define MAXSPP 128
 #define IMAGEWIDTH 160
 #define MAXDEPTH 32
 #include <cmath>

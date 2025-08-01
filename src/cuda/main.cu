@@ -49,10 +49,31 @@ int main() {
             .center = point3(-1.0, 0.0, -1.0),
             .radius = 0.5f,
             .material = {
-                .type = materialType::METAL,
+                .type = materialType::DIELECTRIC,
                 .metal = {
                     .albedo = color(0.8, 0.8, 0.8),
+                    .fuzz = 0.3
+                },
+                .dielectric = {
+                  .refractiveIndex=1.5f
                 }
+            }
+        }
+    };
+    shape sphereLeftBubble = {
+        .type = shapeType::SPHERE,
+        .sphere = {
+            .center = point3(-1.0, 0.0, -1.0),
+            .radius = 0.4f,
+            .material = {
+                .type = materialType::DIELECTRIC,
+                .metal = {
+                    .albedo = color(0.8, 0.8, 0.8),
+                    .fuzz = 0.3
+                },
+                .dielectric = {
+                    .refractiveIndex=1.0f/1.5f
+                  }
             }
         }
     };
@@ -65,6 +86,7 @@ int main() {
                 .type = materialType::METAL,
                 .metal = {
                     .albedo = color(0.8, 0.6, 0.2),
+                    .fuzz = 1.0
                 }
             }
         }
@@ -75,6 +97,7 @@ int main() {
     hostWorld.push_back(sphereCenter);
     hostWorld.push_back(ball);
     hostWorld.push_back(sphereLeft);
+    hostWorld.push_back(sphereLeftBubble);
     hostWorld.push_back(sphereRight);
 
     // to device mem

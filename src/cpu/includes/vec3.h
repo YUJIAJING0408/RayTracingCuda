@@ -125,4 +125,11 @@ inline vec3cpu random_on_hemisphere(const vec3cpu& normal) {
 inline vec3cpu reflect(const vec3cpu& v, const vec3cpu& n) {
     return v - 2*dot(v,n)*n;
 }
+
+inline vec3cpu refract(const vec3cpu& uv, const vec3cpu& n, float etai_over_etat) {
+    auto cos_theta = std::fminf(dot(-uv, n), 1.0);
+    vec3cpu r_out_perp =  etai_over_etat * (uv + cos_theta*n);
+    vec3cpu r_out_parallel = -std::sqrtf(std::fabsf(1.0 - r_out_perp.lengthSquared())) * n;
+    return r_out_perp + r_out_parallel;
+}
 #endif //VEC3_H
