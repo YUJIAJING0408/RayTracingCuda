@@ -5,9 +5,9 @@
 #ifndef RAYTRACINGCOMMON_H
 #define RAYTRACINGCOMMON_H
 #define CUDALIMITSTACKSIZE 1024 * 128
-#define MAXSPP 1024
-#define IMAGEWIDTH 160
-#define MAXDEPTH 32
+#define MAXSPP 512
+#define IMAGEWIDTH 1600
+#define MAXDEPTH 16
 #include <cmath>
 #include <iostream>
 #include <limits>

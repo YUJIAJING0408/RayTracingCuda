@@ -24,6 +24,14 @@ CUDA_CALLABLE inline double linear2Gamma(double linearComponent)
     return linearComponent > 0?sqrtf(linearComponent):0;
 }
 
+inline color colorRandom() {
+    return color(randomFloat(),randomFloat(),randomFloat());
+}
+
+inline color colorRandom(float min,float max ) {
+    return color(randomFloat(min,max),randomFloat(min,max),randomFloat(min,max));
+}
+
 CUDA_CALLABLE void writeColor(std::ofstream &file,const color& pixelColor) {
     string line;
     auto r = linear2Gamma( pixelColor.x());

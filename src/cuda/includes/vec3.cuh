@@ -186,6 +186,16 @@ __device__ vec3 getRandomOnHemisphere(int idx,curandState *states,vec3 normal) {
     return -onUnitSphere;
 }
 
+__device__ vec3 randomInUnitDisk(int idx,curandState *states) {
+    while (true) {
+        auto p = vec3(getRandomBetween(idx,states,-1.f,1.f), getRandomBetween(idx,states,-1.f,1.f), 0.f);
+        float ls = p.lengthSquared();
+        if (ls < 1.f)
+            // p.print();
+            return p;
+    }
+}
+
 
 
 #endif //VEC3_CUH

@@ -18,6 +18,10 @@ inline float linear2Gamma(float linearComponent)
     return linearComponent > 0?sqrtf(linearComponent):0;
 }
 
+inline color colorRandom(float min,float max ) {
+    return color(randomFloat(min,max),randomFloat(min,max),randomFloat(min,max));
+}
+
 void writeColor(std::ofstream &file,const color& pixelColor) {
     string line;
     auto r = linear2Gamma( pixelColor.x());

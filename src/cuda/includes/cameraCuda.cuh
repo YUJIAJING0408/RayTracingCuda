@@ -14,41 +14,60 @@
 #include <curand_kernel.h>
 
 struct cameraCuda {
-    float aspectRatio,focalLength,pixelSampleScale;
+    float aspectRatio,pixelSampleScale,vfov,defocusAngle = 0.f,focusDist = 10.f;
     int imageWidth,imageHeight,samplesPerPixel;
-    point3 center,pixel00_Loc;
-    vec3 pixelDeltaU,pixelDeltaV;
+    point3 center,pixel00_Loc,lookFrom,lookAt = point3(.0f,.0f,-1.f);
+    vec3 pixelDeltaU,pixelDeltaV,u,v,w,vup = vec3(0.0f,1.0f,0.0f),defocusDiskU,defocusDiskV;
 };
 
-cameraCuda newCamera(int imageWidth,int samplesPerPixel,float aspectRatio) {
+cameraCuda newCamera(int imageWidth,int samplesPerPixel,float aspectRatio,float vfov,float defocusAngle,float focusDisk,point3 lookFrom,point3 lookAt,vec3 vup) {
     cameraCuda c;
+    c.vfov=vfov;
+    c.vup = vup;
     c.imageWidth = imageWidth;
     c.aspectRatio = aspectRatio;
     int imageHeight = static_cast<int>(static_cast<float>(imageWidth) / aspectRatio);
     c.imageHeight = imageHeight > 0 ? imageHeight : 1;
     c.samplesPerPixel = samplesPerPixel;
-    c.focalLength = 1.0f;
-    c.center = point3(0,0,0);
-    auto viewportHeight = 2.0f;
+    c.center = lookFrom;
+    c.lookFrom = lookFrom;
+    c.defocusAngle = defocusAngle;
+    c.focusDist = focusDisk;
+    float theta = degrees2Radians(vfov);
+    float h = tanf(theta/2.f);
+
+    auto viewportHeight = 2.0f * h * c.focusDist;
     auto viewportWidth = viewportHeight * (static_cast<float>(imageWidth)/static_cast<float>(imageHeight));
     c.pixelSampleScale = 1.0f / static_cast<float>(samplesPerPixel);
-    auto viewportU = vec3(viewportWidth, 0.f, 0.f);
-    auto viewportV = vec3(0, -viewportHeight, 0.f);
-
+    c.w = unit_vector(lookFrom-lookAt);
+    c.u = unit_vector(cross(c.vup,c.w));
+    c.v = cross(c.w,c.u);
+    auto viewportU = viewportWidth * c.u;
+    auto viewportV = -viewportHeight * c.v;
     c.pixelDeltaU = viewportU / static_cast<float>(imageWidth);
     c.pixelDeltaV = viewportV / static_cast<float>(imageHeight);
 
-    auto viewportUpperLeft = c.center - vec3(0, 0, c.focalLength) - viewportU/2 - viewportV/2;
+    auto viewportUpperLeft = c.center - c.focusDist * c.w - viewportU/2 - viewportV/2;
     c.pixel00_Loc = viewportUpperLeft + 0.5 * (c.pixelDeltaU + c.pixelDeltaV);
+
+    float defocusRadius = focusDisk * tanf(degrees2Radians(defocusAngle/2.f));
+    c.defocusDiskU = c.u * defocusRadius;
+    c.defocusDiskV = c.v * defocusRadius;
     return c;
 };
+
+__device__ point3 defocusDiskSample(int idx,curandState *states,cameraCuda cam) {
+    point3 p = randomInUnitDisk(idx,states);
+    return cam.center + (p.x() * cam.defocusDiskU) + (p.y() * cam.defocusDiskV);
+}
 
 __device__ ray getRay(int idx,curandState *states,cameraCuda cam,int x,int y){
     float xR = (getRandomFloat(idx,states) - 0.5f); //[-0.5f,0.5f]
     float yR = (getRandomFloat(idx,states) - 0.5f);
 
     auto rayDirection =cam.pixel00_Loc + (xR + x) * cam.pixelDeltaU + (yR + y) * cam.pixelDeltaV - cam.center;
-    return ray(cam.center, rayDirection);
+    point3 origin= (cam.defocusAngle <=0)?cam.center:defocusDiskSample(idx,states,cam);
+    return ray(origin, rayDirection);
 }
 
 __device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* world,int worldSize) {

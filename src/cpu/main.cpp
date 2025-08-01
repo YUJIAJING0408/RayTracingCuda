@@ -21,12 +21,30 @@ int main() {
     world.add(make_shared<sphereCpu>(point3cpu(-1.0, 0.0, -1.0), 0.4f, mb));
     world.add(make_shared<sphereCpu>(point3cpu(1.0, 0.0, -1.0), 0.5f, mr));
 
+    /*
+    auto R = std::cos(pi/4);
+
+    auto material_left  = make_shared<lambertianCpu>(color(0,0,1));
+    auto material_right = make_shared<lambertianCpu>(color(1,0,0));
+
+    world.add(make_shared<sphereCpu>(point3cpu(-R, 0, -1), R, material_left));
+    world.add(make_shared<sphereCpu>(point3cpu( R, 0, -1), R, material_right));
+    */
+
     // Camera
     cameraCpu cam;
     // cam.aspectRatio = 16.0/9.0;
     cam.aspectRatio = 2.0 / 1.0;
     cam.imageWidth = IMAGEWIDTH;
     cam.samplePerPixel = MAXSPP;
+    cam.vfov = 20.f;
+    cam.lookFrom = point3cpu(-2.f,2.f,1.f);
+    cam.lookAt = point3cpu(0.f,0.0f,-1.f);
+    cam.vup = point3cpu(0,1.f,0);
+
+    cam.defocusAngle = 1.f;
+    cam.focusDist = 3.4f;
+
     cam.render("imageCPU.ppm", world);
     printf("------------------------");
     return 0;

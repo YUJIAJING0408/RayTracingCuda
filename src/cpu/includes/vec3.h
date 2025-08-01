@@ -99,6 +99,15 @@ inline vec3cpu unit_vector(const vec3cpu& v) {
     return v / v.length();
 }
 
+inline vec3cpu random_in_unit_disk() {
+    while (true) {
+        auto p = vec3cpu(randomFloat(-1.f,1.f), randomFloat(-1.f,1.f), 0);
+        if (p.lengthSquared() < 1)
+            // p.print();
+            return p;
+    }
+}
+
 static vec3cpu random() {
     return vec3cpu(randomFloat(), randomFloat(), randomFloat());
 }

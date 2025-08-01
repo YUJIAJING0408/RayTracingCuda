@@ -13,6 +13,11 @@ class cameraCpu {
 public:
     float aspectRatio = 1.0f;
     int imageWidth = 32*16,samplePerPixel = 10;
+    float vfov = 90.f,defocusAngle = 0.f,focusDist = 10.f;
+
+    point3cpu lookFrom = point3cpu(0,0,0);   // Point camera is looking from
+    point3cpu lookAt   = point3cpu(0,0,-1);  // Point camera is looking at
+    vec3cpu   vup      = vec3cpu(0,1,0);     // Camera-relative "up" direction
 
     void render(const string name,const hittableCpu& world) {
         initialize();
@@ -41,18 +46,18 @@ public:
         file.close();
     }
 
+    point3cpu defocusDiskSample() const {
+        auto p  =random_in_unit_disk();
+        return center + (p.x() * defocusDiskU) + (p.y() * defocusDiskV);
+    };
+
     rayCpu getRay(int x,int y) const{
         auto offset = sampleSquare();
 
         auto pixelSample = pixel00_Loc + (offset.x() + x) * pixelDeltaU + (offset.y() + y) * pixelDeltaV;
-        auto rayOrigin = center;
-        // rayOrigin.print();
+        auto rayOrigin = defocusAngle <=0? center: defocusDiskSample();
         auto rayDirection = pixelSample - rayOrigin;
-        // rayDirection.print();
-        // if (x == 0&&y==0) {
-        //     // printf("offset x y = (%f,%f)\n",offset.x(),offset.y());
-        //     printf("RayDir: (%.6f, %.6f, %.6f)\n", rayDirection.x(), rayDirection.y(), rayDirection.z());
-        // }
+
         return rayCpu(rayOrigin, rayDirection);
     }
 
@@ -80,27 +85,36 @@ public:
     int getImageHeight(){return imageHeight;}
 private:
     int imageHeight = 1;
-    point3cpu center = point3cpu(0, 0, 0),pixel00_Loc;
-    vec3cpu pixelDeltaU,pixelDeltaV;
-    float pixelSampleScale = .1f,focalLength = 1.0f;
+    point3cpu center,pixel00_Loc;
+    vec3cpu pixelDeltaU,pixelDeltaV,u,v,w,defocusDiskU,defocusDiskV;
+    float pixelSampleScale = .1f;
 
     void initialize() {
         imageHeight = static_cast<int>(static_cast<float>(imageWidth) / aspectRatio);
         imageHeight = imageHeight > 0 ? imageHeight : 1;
-
-        focalLength = 1.0f;
-        auto viewportHeight = 2.0f;
+        center = lookFrom;
+        float theta = degrees2Radians(vfov);
+        float h = tanf(theta/2.f);
+        auto viewportHeight = 2.0f * h * focusDist;
         auto viewportWidth = viewportHeight * (static_cast<float>(imageWidth)/static_cast<float>(imageHeight));
         pixelSampleScale = 1.0f / static_cast<float>(samplePerPixel);
-        auto viewportU = vec3cpu(viewportWidth, 0.f, 0.f);
-        auto viewportV = vec3cpu(0, -viewportHeight, 0.f);
+        // Calculate the u,v,w unit basis vectors for the camera coordinate frame.
+        w = unit_vector(lookFrom - lookAt);
+        u = unit_vector(cross(vup, w));
+        v = cross(w, u);
+
+        auto viewportU = viewportWidth*u;
+        auto viewportV = -viewportHeight*v;
 
         pixelDeltaU = viewportU / static_cast<float>(imageWidth);
         pixelDeltaV = viewportV / static_cast<float>(imageHeight);
-
-        auto viewportUpperLeft = center - vec3cpu(0, 0, focalLength) - viewportU/2 - viewportV/2;
+        // Calculate the location of the upper left pixel.
+        auto viewportUpperLeft = center - focusDist * w - viewportU/2 - viewportV/2;
         pixel00_Loc = viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV);
-
+        // Calculate the camera defocus disk basis vectors.
+        float defocusRadius = focusDist * tanf(degrees2Radians(defocusAngle/2));
+        defocusDiskU = u * defocusRadius;
+        defocusDiskV = v * defocusRadius;
     }
 
     vec3cpu sampleSquare()const{
