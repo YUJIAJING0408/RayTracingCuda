@@ -21,12 +21,12 @@ void makeWorld(const int size, vector<shape> &world) {
                     shape lambertian = {
                         .type = shapeType::SPHERE,
                         .sphere = {
-                            .center = center,
+                            .center = ray(center,vec3(0.f, randomFloat(0.f,.5f), 0.f)),
                             .radius = 0.2f,
                             .material = {
                                 .type = materialType::LAMBERTIAN,
                                 .lambertian = {
-                                    .albedo = randomFloat() * colorRandom(0.5, 1.0)
+                                    .albedo = randomFloat() * colorRandom(0.f, 1.0f)
                                 }
                             }
                         }
@@ -37,7 +37,7 @@ void makeWorld(const int size, vector<shape> &world) {
                     shape metal = {
                         .type = shapeType::SPHERE,
                         .sphere = {
-                            .center = center,
+                            .center = ray(center,vec3(0.f, 0.f, 0.f)),
                             .radius = 0.2f,
                             .material = {
                                 .type = materialType::METAL,
@@ -54,7 +54,7 @@ void makeWorld(const int size, vector<shape> &world) {
                     shape glass = {
                         .type = shapeType::SPHERE,
                         .sphere = {
-                            .center = center,
+                            .center = ray(center,vec3(0.f, 0.f, 0.f)),
                             .radius = 0.2f,
                             .material = {
                                 .type = materialType::DIELECTRIC,
@@ -206,7 +206,7 @@ int main() {
     shape metal = {
         .type = shapeType::SPHERE,
         .sphere = {
-            .center = point3(4.f, 1.f, 0.f),
+            .center = ray(point3(4.f, 1.f, 0.f),vec3(0.f,0.f,0.f)),
             .radius = 1.0f,
             .material = {
                 .type = materialType::METAL,
@@ -220,7 +220,7 @@ int main() {
     shape glass = {
         .type = shapeType::SPHERE,
         .sphere = {
-            .center = point3(0.f, 1.f, 0.f),
+            .center = ray(point3(0.f, 1.f, 0.f),vec3(0.f,0.f,0.f)),
             .radius = 1.0f,
             .material = {
                 .type = materialType::DIELECTRIC,
@@ -235,7 +235,7 @@ int main() {
     shape lambertian = {
         .type = shapeType::SPHERE,
         .sphere = {
-            .center = point3(-4.f,1.f,0.f),
+            .center = ray( point3(-4.f,1.f,0.f),vec3(0.f,0.f,0.f)),
             .radius = 1.0f,
             .material = {
                 .type = materialType::LAMBERTIAN,
@@ -249,7 +249,7 @@ int main() {
     shape groundBall = {
         .type = shapeType::SPHERE,
         .sphere{
-            .center = point3(0.f, -1000.f, 0.f),
+            .center = ray(point3(0.f, -1000.f, 0.f),vec3(0.f,0.f,0.f)),
             .radius = 1000.f,
             .material = {
                 .type = materialType::LAMBERTIAN,

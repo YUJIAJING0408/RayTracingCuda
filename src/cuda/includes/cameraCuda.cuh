@@ -67,7 +67,8 @@ __device__ ray getRay(int idx,curandState *states,cameraCuda cam,int x,int y){
 
     auto rayDirection =cam.pixel00_Loc + (xR + x) * cam.pixelDeltaU + (yR + y) * cam.pixelDeltaV - cam.center;
     point3 origin= (cam.defocusAngle <=0)?cam.center:defocusDiskSample(idx,states,cam);
-    return ray(origin, rayDirection);
+    float t = getRandomFloat(idx,states);
+    return ray(origin, rayDirection,t);
 }
 
 __device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* world,int worldSize) {

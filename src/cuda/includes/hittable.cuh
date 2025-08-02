@@ -14,7 +14,7 @@
 enum class shapeType { SPHERE, PLANE, TRIANGLE };
 
 struct sphereData {
-    point3 center;
+    ray center;
     float radius;
     material material;
 };
@@ -31,7 +31,8 @@ struct shape {
 };
 
 __device__ bool hitSphere(const sphereData &s, const ray &r, const interval rayT, hitRecord &rec) {
-    vec3 oc = s.center - r.GetOrigin();
+    point3 currentCenter = s.center.at(r.getTime());
+    vec3 oc = currentCenter - r.GetOrigin();
     // r.GetDirection().print();
     float a = r.GetDirection().lengthSquared();
     float h = dot(r.GetDirection(), oc);
@@ -56,7 +57,7 @@ __device__ bool hitSphere(const sphereData &s, const ray &r, const interval rayT
     rec.t = root;
     rec.p = r.at(rec.t);
     rec.mat = s.material;
-    vec3 outward_normal = (rec.p - s.center) / s.radius;
+    vec3 outward_normal = (rec.p - currentCenter) / s.radius;
     rec.set_face_normal(r, outward_normal);
     return true;
 }

@@ -6,7 +6,7 @@
 #define RAYTRACINGCOMMON_H
 #define CUDALIMITSTACKSIZE 1024 * 128
 #define MAXSPP 512
-#define IMAGEWIDTH 1600
+#define IMAGEWIDTH 400
 #define MAXDEPTH 16
 #include <cmath>
 #include <iostream>

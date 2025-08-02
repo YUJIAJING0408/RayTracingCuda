@@ -49,13 +49,13 @@ public:
 };
 
 
-__device__ bool lambertianScatter(int idx, curandState *states,const lambertianData mat , const hitRecord& rec, color& attenuation, ray& scattered)
+__device__ bool lambertianScatter(int idx, curandState *states,const lambertianData mat ,const ray& r_in, const hitRecord& rec, color& attenuation, ray& scattered)
 {
     vec3 scatterDirection = rec.normal + getRandomUnitVec3(idx,states);
     if (scatterDirection.nearZero()) {
         scatterDirection = rec.normal;
     }
-    scattered = ray(rec.p, scatterDirection);
+    scattered = ray(rec.p, scatterDirection,r_in.getTime());
     attenuation = mat.albedo;
     return true;
 }
@@ -64,7 +64,7 @@ __device__ bool metalScatter(int idx, curandState *states,const metalData mat ,c
 {
     vec3 reflected = reflect(r_in.GetDirection(), rec.normal);
     reflected = unit_vector(reflected) + getRandomUnitVec3(idx,states) * mat.fuzz;
-    scattered = ray(rec.p, reflected);
+    scattered = ray(rec.p, reflected,r_in.getTime());
     attenuation = mat.albedo;
     return (dot(scattered.GetDirection(), rec.normal) > 0);
 }
@@ -90,7 +90,7 @@ __device__ bool dielectricScatter(int idx, curandState *states,const dielectricD
         // refract
         direction = refract(unitDirection, rec.normal,ri);
     }
-    scattered = ray(rec.p, direction);
+    scattered = ray(rec.p, direction,r_in.getTime());
     return true;
 }
 
@@ -100,7 +100,7 @@ __device__ bool scatter(int idx, curandState *states,material mat,const ray& ray
     if (mat.type == materialType::METAL) {
         return metalScatter(idx,states,mat.metal,rayIn,rec,attenuation,rayOut);
     }else if (mat.type == materialType::LAMBERTIAN) {
-        return lambertianScatter(idx,states,mat.lambertian,rec,attenuation,rayOut);
+        return lambertianScatter(idx,states,mat.lambertian,rayIn,rec,attenuation,rayOut);
     }else {
         return dielectricScatter(idx,states,mat.dielectric,rayIn,rec,attenuation,rayOut);
     }
