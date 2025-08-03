@@ -18,7 +18,7 @@ void makeWorld(const int size, vector<shape> &world) {
             if ((center - point3(4, 0.2f, 0)).length() > 0.9) {
                 if (r < 0.8f) {
                     // lambertian
-                    shape lambertian = makeMovingSphere(center,vec3(0.f, randomFloat(0.f,.5f),0.f),0.2f,makeLambertian(randomFloat() * colorRandom(0.f, 1.0f)));
+                    shape lambertian = makeMovingSphere(center,center+vec3(0.f, randomFloat(0.f,.5f),0.f),0.2f,makeLambertian(randomFloat() * colorRandom(0.f, 1.0f)));
                     world.push_back(lambertian);
                 } else if (r < 0.95f) {
                     // metal
@@ -37,13 +37,13 @@ void makeWorld(const int size, vector<shape> &world) {
 
 int main() {
     cudaDeviceSetLimit(cudaLimitStackSize, CUDALIMITSTACKSIZE);
-    std::cout << "Hello, World!" << std::endl;
+    std::cout << "Hello, Cuda!\n" << std::endl;
     vector<shape> hostWorld;
     makeWorld(11, hostWorld);
     shape metalBall = makeStaticSphere(point3(4.f, 1.f, 0.f),1.f,makeMetal(color(0.7f, 0.6f, 0.5f),0.f));
     shape glassBall = makeStaticSphere(point3(0.f, 1.f, 0.f),1.f,makeDielectric(1.5f));
     shape lambertianBall = makeStaticSphere(point3(-4.f,1.f,0.f),1.0f,makeLambertian(color(0.4f,0.2f,0.1f)));
-    shape groundBall = makeStaticSphere(point3(0.f, -1000.f, 0.f),1000.f,makeLambertian(color(0.5f, 0.5f, 0.5f)));
+    shape groundBall = makeStaticSphere(point3(0.f, -1000.f, 0.f),1000.f,makeLambertianCheckerBoard(color(0.3f, 0.3f, 0.3f),color(1.f,1.f,1.f)));
 
 
     hostWorld.push_back(groundBall);

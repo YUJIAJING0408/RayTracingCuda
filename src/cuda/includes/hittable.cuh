@@ -116,7 +116,7 @@ __device__ bool hitShapeList(shape *s, int worldSize, const ray &r, const interv
         vec3(0, 0, 0),
         {
             materialType::LAMBERTIAN, {
-                color(1.0f, 0.0f, 0.0f),
+                .albedoTexture=makeSolidTexture(color(1.0f, 0.0f, 0.0f)) ,
             }
         }
     };

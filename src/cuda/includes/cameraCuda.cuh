@@ -80,7 +80,7 @@ __device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* wor
         vec3(0, 0, 0),
         {
             materialType::LAMBERTIAN, {
-                color(1.0f, 0.0f, 0.0f),
+                 .albedoTexture=makeSolidTexture(color(1.0f, 0.0f, 0.0f)) ,
             }
         }
     };
@@ -108,7 +108,7 @@ __device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* wor
             // printf("material m %d\n",m.type);
 
             if (scatter(idx,states,rec.mat,r,rec,attenuation,scattered)) {
-                return attenuation * rayColor(idx,states,scattered,depth-1, world,worldSize,bvh);
+                return attenuation * rayColor(idx,states,scattered,depth-1, world,worldSize,nullptr);
             }
 
             return color(0,0,0);
