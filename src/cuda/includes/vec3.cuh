@@ -60,9 +60,22 @@ public:
         float s = 1e-8f;
         return (fabsf(element[0]) < s) && (fabsf(element[1]) < s) && (fabsf(element[2]) < s);
     }
+
+    CUDA_CALLABLE float& operator[](size_t i) {
+        return element[i];
+    }
+    const CUDA_CALLABLE float& operator[](size_t i) const {
+        return element[i];
+    }
+
+    CUDA_CALLABLE float getAxis(int axis) {
+        return element[axis];
+    }
 };
 
 using point3 = vec3;
+
+
 
 CUDA_CALLABLE inline vec3 operator+(const vec3& l, const vec3& r) {
     return vec3(l.element[0]+r.element[0],l.element[1]+r.element[1],l.element[2]+r.element[2]);

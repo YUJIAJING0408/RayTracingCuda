@@ -9,6 +9,7 @@
 #else
 #define CUDA_CALLABLE
 #endif
+// #include "ab.cuh"
 #include "raytracingCommon.cuh"
 // #include "raytracingCommon.h"
 
@@ -17,9 +18,16 @@ class interval {
 public:
     float min, max;
 
-    CUDA_CALLABLE interval() : min(+infinity), max(-infinity) {} // Default interval is empty
+    CUDA_CALLABLE interval() : min(+infinity), max(-infinity) {
+    } // Default interval is empty
 
-    CUDA_CALLABLE interval(const float min, const float max) : min(min), max(max) {}
+    CUDA_CALLABLE interval(const float min, const float max) : min(min), max(max) {
+    }
+
+    CUDA_CALLABLE interval(const interval a,const interval b) {
+        min = a.min<=b.min ? a.min : b.min;
+        max = a.max>=b.max ? a.max : b.max;
+    }
 
     CUDA_CALLABLE float size() const {
         return max - min;
@@ -39,10 +47,15 @@ public:
         return x;
     }
 
+    CUDA_CALLABLE interval expand(float delta) const {
+        float padding = delta / 2.f;
+        return interval(min - padding, max + padding);
+    }
+
     static const interval empty, universe;
 };
 
-const interval interval::empty    = interval(+infinity, -infinity);
+const interval interval::empty = interval(+infinity, -infinity);
 const interval interval::universe = interval(-infinity, +infinity);
 
 

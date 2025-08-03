@@ -71,7 +71,7 @@ __device__ ray getRay(int idx,curandState *states,cameraCuda cam,int x,int y){
     return ray(origin, rayDirection,t);
 }
 
-__device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* world,int worldSize) {
+__device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* world,int worldSize,bvhInCuda * bvh) {
     // printf("depth = %d\n",depth);
     if (depth <= 0)
         return color(0,0,0);
@@ -84,21 +84,35 @@ __device__ color rayColor(int idx,curandState *states,ray r,int depth,shape* wor
             }
         }
     };
-    if (hitShapeList(world,worldSize,r, interval(1e-3f, infinity), rec)) {
-        // return 0.5 * (rec.normal + color(1.f,1.f,1.f));
-        // vec3 direction = getRandomOnHemisphere(idx,states,rec.normal);
-        // vec3 direction  = rec.normal + getRandomUnitVec3(idx,states);
-        // ray r = ray(rec.p,direction);
-        // return 0.5 * rayColor(idx,states,r,depth-1,world,worldSize);
-        ray scattered;
-        color attenuation;
-        // printf("material m %d\n",m.type);
+    if (bvh!=nullptr) {
+        // bvh
+        if (hitBvh(*bvh,r,interval(1e-3f, infinity), rec)) {
+            ray scattered;
+            color attenuation;
+            // printf("material m %d\n",m.type);
 
-        if (scatter(idx,states,rec.mat,r,rec,attenuation,scattered)) {
-            return attenuation * rayColor(idx,states,scattered,depth-1, world,worldSize);
+            if (scatter(idx,states,rec.mat,r,rec,attenuation,scattered)) {
+                return attenuation * rayColor(idx,states,scattered,depth-1, world,worldSize,bvh);
+            }
+            return color(0,0,0);
         }
+    }else {
+        if (hitShapeList(world,worldSize,r, interval(1e-3f, infinity), rec)) {
+            // return 0.5 * (rec.normal + color(1.f,1.f,1.f));
+            // vec3 direction = getRandomOnHemisphere(idx,states,rec.normal);
+            // vec3 direction  = rec.normal + getRandomUnitVec3(idx,states);
+            // ray r = ray(rec.p,direction);
+            // return 0.5 * rayColor(idx,states,r,depth-1,world,worldSize);
+            ray scattered;
+            color attenuation;
+            // printf("material m %d\n",m.type);
 
-        return color(0,0,0);
+            if (scatter(idx,states,rec.mat,r,rec,attenuation,scattered)) {
+                return attenuation * rayColor(idx,states,scattered,depth-1, world,worldSize,bvh);
+            }
+
+            return color(0,0,0);
+        }
     }
     //
     vec3 unitDirection = unit_vector(r.GetDirection());
@@ -116,7 +130,7 @@ __global__ void setup_random_states(curandState *states,int imageWidth,int image
     }
 }
 
-__global__ __launch_bounds__(1024,4) void kernelSample(curandState *states,cameraCuda cam,color * devicePixels,shape* world,int worldSize) {
+__global__ __launch_bounds__(1024,4) void kernelSample(curandState *states,cameraCuda cam,color * devicePixels,shape* world,int worldSize,bvhInCuda* bvh) {
     // printf("world size = %d\n",worldSize);
     const int h = blockIdx.y * blockDim.y + threadIdx.y;
     const int w = threadIdx.x + blockIdx.x * blockDim.x;
@@ -133,7 +147,7 @@ __global__ __launch_bounds__(1024,4) void kernelSample(curandState *states,camer
         color pixelColor = color(0.f,0.f,0.f);
         for (int i = 0; i < cam.samplesPerPixel; i++) {
             ray r = getRay(idx,states,cam,w,h);
-            pixelColor += rayColor(idx,states,r,MAXDEPTH,world,worldSize);
+            pixelColor += rayColor(idx,states,r,MAXDEPTH,world,worldSize,bvh);
         }
         // avg
         pixelColor *= cam.pixelSampleScale;
@@ -142,7 +156,7 @@ __global__ __launch_bounds__(1024,4) void kernelSample(curandState *states,camer
     }
 }
 
-CUDA_CALLABLE void render(cameraCuda cam,const string name,shape* deviceWorld,int worldSize) {
+CUDA_CALLABLE void render(cameraCuda cam,const string name,shape* deviceWorld,int worldSize,bvhInCuda* bvh) {
     printf("world size = %d\n",worldSize);
     ofstream file(name, ios::out);
     if (!file.is_open()) {
@@ -176,7 +190,7 @@ CUDA_CALLABLE void render(cameraCuda cam,const string name,shape* deviceWorld,in
     if (isCudaError(cudaGetLastError(),__FILE__,__LINE__)) {
         return;
     }
-    kernelSample<<<grid,block>>>(d_states,cam,devicePixels,deviceWorld,worldSize);
+    kernelSample<<<grid,block>>>(d_states,cam,devicePixels,deviceWorld,worldSize,bvh);
     cudaDeviceSynchronize();
     if (isCudaError(cudaGetLastError(),__FILE__,__LINE__)) {
         return;

@@ -34,6 +34,36 @@ struct material {
     // other
 };
 
+__host__ material& makeLambertian(const color albedo) {
+    material m = {
+        .type = materialType::LAMBERTIAN,
+        .lambertian = {
+            .albedo = albedo
+        }
+    };
+    return m;
+}
+
+__host__ material& makeMetal(const color albedo,const float fuzz) {
+    material m = {
+        .type = materialType::METAL,
+        .metal = {
+            .albedo = albedo,
+            .fuzz = fuzz
+        }
+    };
+    return m;
+}
+
+__host__ material& makeDielectric(const float refractiveIndex) {
+    material m = {
+        .type = materialType::DIELECTRIC,
+        .dielectric = {
+            .refractiveIndex = refractiveIndex
+        }
+    };
+    return m;
+}
 
 class hitRecord {
 public:

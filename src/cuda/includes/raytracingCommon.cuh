@@ -7,7 +7,7 @@
 #define CUDALIMITSTACKSIZE 1024 * 128
 #define MAXSPP 512
 #define IMAGEWIDTH 400
-#define MAXDEPTH 16
+#define MAXDEPTH 32
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -46,8 +46,12 @@ inline float randomFloat(float min, float max) {
     return min + (max-min)*randomFloat();
 }
 
+inline int randomInt(int min, int max) {
+    return static_cast<int>(randomFloat(min, max + 1));
+}
+
 inline void progressBar(int current, int total, int bar_width) {
-    float progress = (float)current / total;
+    float progress = static_cast<float>(current) / total;
     int pos = bar_width * progress;
 
     printf("[");
@@ -77,6 +81,7 @@ __host__ bool isCudaError(cudaError_t err,const char * name,const int line) {
 #include "color.cuh"
 #include "interval.cuh"
 #include "ray.cuh"
+#include "aabb.cuh"
 #include "material.cuh"
 #include "hittable.cuh"
 #include "cameraCuda.cuh"
